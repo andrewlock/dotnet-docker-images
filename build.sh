@@ -32,13 +32,79 @@ for i in "7 2.1" "7 3.1" "7 5.0" "7 6.0"; do
     docker build \
         --build-arg CENTOS_VERSION=$centosVersion \
         --build-arg DOTNET_VERSION=$dotnetVersion \
-        -f ./centos7.Dockerfile \
+        -f ./centos.Dockerfile \
         -t andrewlock/dotnet-centos:$centosVersion-$dotnetVersion \
         .
 
     if [[ "${1-''}" == "push" ]]
     then
         docker push andrewlock/dotnet-centos:$centosVersion-$dotnetVersion
+    else
+        echo "Skipping push"
+    fi
+
+done;
+
+echo "Building RHEL 8 images"
+for i in "8 3.1" "8 5.0" "8 6.0"; do 
+    a=( $i )
+    rhelVersion="${a[0]}";
+    dotnetVersion="${a[1]}";
+
+    docker build \
+        --build-arg RHEL_VERSION=$rhelVersion \
+        --build-arg DOTNET_VERSION=$dotnetVersion \
+        -f ./rhel.Dockerfile \
+        -t andrewlock/dotnet-rhel:$rhelVersion-$dotnetVersion \
+        .
+
+    if [[ "${1-''}" == "push" ]]
+    then
+        docker push andrewlock/dotnet-rhel:$rhelVersion-$dotnetVersion
+    else
+        echo "Skipping push"
+    fi
+
+done;
+
+echo "Building CentOS Stream images"
+for i in "8 3.1" "8 5.0" "8 6.0" "9 6.0"; do 
+    a=( $i )
+    centosVersion="${a[0]}";
+    dotnetVersion="${a[1]}";
+
+    docker build \
+        --build-arg CENTOS_VERSION=$centosVersion \
+        --build-arg DOTNET_VERSION=$dotnetVersion \
+        -f ./centos-stream.Dockerfile \
+        -t andrewlock/dotnet-centos-stream:$centosVersion-$dotnetVersion \
+        .
+
+    if [[ "${1-''}" == "push" ]]
+    then
+        docker push andrewlock/dotnet-centos-stream:$centosVersion-$dotnetVersion
+    else
+        echo "Skipping push"
+    fi
+
+done;
+
+echo "Building Open Suse images"
+for i in  "15 2.1" "15 3.1" "15 5.0" "15 6.0"; do 
+    a=( $i )
+    opensuse="${a[0]}";
+    dotnetVersion="${a[1]}";
+
+    docker build \
+        --build-arg OPENSUSE_VERSION=$opensuse \
+        --build-arg DOTNET_VERSION=$dotnetVersion \
+        -f ./opensuse.Dockerfile \
+        -t andrewlock/dotnet-opensuse:$opensuse-$dotnetVersion \
+        .
+
+    if [[ "${1-''}" == "push" ]]
+    then
+        docker push andrewlock/dotnet-opensuse:$opensuse-$dotnetVersion
     else
         echo "Skipping push"
     fi

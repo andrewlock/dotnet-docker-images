@@ -22,3 +22,25 @@ for i in "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1" "29 3.1"
     fi
 
 done;
+
+echo "Building CentOS 7 images"
+for i in "7 2.1" "7 3.1" "7 5.0" "7 6.0"; do 
+    a=( $i )
+    centosVersion="${a[0]}";
+    dotnetVersion="${a[1]}";
+
+    docker build \
+        --build-arg CENTOS_VERSION=$centosVersion \
+        --build-arg DOTNET_VERSION=$dotnetVersion \
+        -f ./centos7.Dockerfile \
+        -t andrewlock/dotnet-centos:$centosVersion-$dotnetVersion \
+        .
+
+    if [[ "${1-''}" == "push" ]]
+    then
+        docker push andrewlock/dotnet-centos:$centosVersion-$dotnetVersion
+    else
+        echo "Skipping push"
+    fi
+
+done;

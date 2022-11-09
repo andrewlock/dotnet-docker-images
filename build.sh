@@ -2,7 +2,7 @@
 set -euo pipefail
 
 echo "Building Fedora images"
-for i in "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1" "29 3.1" "29 2.1"; do 
+for i in "35 7.0" "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1" "29 3.1" "29 2.1" ; do 
     a=( $i )
     fedoraVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -24,7 +24,7 @@ for i in "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1" "29 3.1"
 done;
 
 echo "Building CentOS 7 images"
-for i in "7 2.1" "7 3.1" "7 5.0" "7 6.0"; do 
+for i in "7 2.1" "7 3.1" "7 5.0" "7 6.0" "7 7.0"; do 
     a=( $i )
     centosVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -46,7 +46,7 @@ for i in "7 2.1" "7 3.1" "7 5.0" "7 6.0"; do
 done;
 
 echo "Building RHEL 8 images"
-for i in "8 3.1" "8 5.0" "8 6.0"; do 
+for i in "8 3.1" "8 5.0" "8 6.0" "8 7.0"; do 
     a=( $i )
     rhelVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -68,7 +68,7 @@ for i in "8 3.1" "8 5.0" "8 6.0"; do
 done;
 
 echo "Building CentOS Stream images"
-for i in "8 3.1" "8 5.0" "8 6.0" "9 6.0"; do 
+for i in "8 3.1" "8 5.0" "8 6.0" "9 6.0" "8 7.0" "9 7.0"; do 
     a=( $i )
     centosVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -90,7 +90,7 @@ for i in "8 3.1" "8 5.0" "8 6.0" "9 6.0"; do
 done;
 
 echo "Building Open Suse images"
-for i in  "15 2.1" "15 3.1" "15 5.0" "15 6.0"; do 
+for i in  "15 2.1" "15 3.1" "15 5.0" "15 6.0" "15 7.0"; do 
     a=( $i )
     opensuse="${a[0]}";
     dotnetVersion="${a[1]}";

@@ -23,6 +23,22 @@ for i in "35 7.0" "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1"
 
 done;
 
+echo "Building Fedora Arm64 images"
+for i in "35 5.0" "34 6.0" "33 3.1" ; do 
+    a=( $i )
+    fedoraVersion="${a[0]}";
+    dotnetVersion="${a[1]}";
+    
+    docker buildx build \
+        --build-arg FEDORA_VERSION=$fedoraVersion \
+        --build-arg DOTNET_VERSION=$dotnetVersion \
+        -f ./fedora.arm64.Dockerfile \
+        -t andrewlock/dotnet-fedora-arm64:$fedoraVersion-$dotnetVersion \
+        --platform linux/arm64 \
+        --push .
+
+done;
+
 echo "Building CentOS 7 images"
 for i in "7 2.1" "7 3.1" "7 5.0" "7 6.0" "7 7.0"; do 
     a=( $i )

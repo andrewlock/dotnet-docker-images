@@ -24,7 +24,7 @@ for i in "35 7.0" "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1"
 done;
 
 echo "Building Fedora Arm64 images"
-for i in "35 5.0" "34 6.0" "33 3.1" ; do 
+for i in "35 7.0" "35 5.0" "34 6.0" "33 3.1" ; do 
     a=( $i )
     fedoraVersion="${a[0]}";
     dotnetVersion="${a[1]}";

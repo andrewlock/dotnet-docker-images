@@ -13,6 +13,10 @@ ENV \
 
 ARG CENTOS_VERSION
 ARG DOTNET_VERSION
+
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
+    && sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
+    && sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo
 # Work around problem where CentOS 8 doesn't have the latest version of .NET
 RUN if [ "$CENTOS_VERSION" = "8" ] ; then rpm -Uvh https://packages.microsoft.com/config/centos/$CENTOS_VERSION/packages-microsoft-prod.rpm \
     && echo 'priority=50' | tee -a /etc/yum.repos.d/microsoft-prod.repo; fi; \

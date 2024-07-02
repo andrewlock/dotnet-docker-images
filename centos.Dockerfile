@@ -13,5 +13,8 @@ ENV \
 ARG DOTNET_VERSION
 # Add Microsoft package repository and install ASP.NET Core
 RUN rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm \
+    && sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo \
+    && sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo \
+    && sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo \
     && yum install -y aspnetcore-runtime-$DOTNET_VERSION \
     && dotnet --info

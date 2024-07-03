@@ -12,7 +12,7 @@ ENV \
     DOTNET_ROOT=/var/opt/dotnet
 
 ARG DOTNET_VERSION
-RUN dnf install -y findutils \
+RUN dnf install -y findutils libicu \
     && mkdir -p $DOTNET_ROOT \
     && curl -sL -o dotnet-install.sh https://dot.net/v1/dotnet-install.sh  \
     && chmod +x ./dotnet-install.sh \

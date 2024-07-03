@@ -14,7 +14,11 @@ ENV \
 ARG OPENSUSE_VERSION
 ARG DOTNET_VERSION
 # add the Microsoft package signing key to your list of trusted keys and add the Microsoft package repository
-RUN zypper install -y libicu wget \
+# Earlier versions of .NET need to use an earlier version of zypper
+RUN if [ "$DOTNET_VERSION" == "2.1" ] || [ "$DOTNET_VERSION" == "3.1" ]; \
+      then zypper install -y libicu69-69.1-7.3.2; \
+      else zypper install -y libicu; fi\
+    && zypper install -y wget \
     && (rpm --import https://packages.microsoft.com/keys/microsoft.asc || echo 'Skipping key import') \
     && wget https://packages.microsoft.com/config/opensuse/$OPENSUSE_VERSION/prod.repo \
     && mv prod.repo /etc/zypp/repos.d/microsoft-prod.repo \

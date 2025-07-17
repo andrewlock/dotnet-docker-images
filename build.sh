@@ -1,6 +1,52 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+
+echo "Building Debian images"
+for i in "trixie 8.0.18 8.0" "trixie 9.0.7 9.0" ; do 
+    a=( $i )
+    debianVersion="${a[0]}";
+    dotnetVersion="${a[1]}";
+    dotnetVersionShort="${a[2]}";
+    
+    echo "building debian:$debianVersion-slim for .NET $dotnetVersion x64"
+    docker buildx build \
+        --build-arg DEBIAN_VERSION=$debianVersion \
+        --build-arg DOTNET_VERSION=$dotnetVersion \
+        -f ./debian.Dockerfile \
+        -t andrewlock/dotnet-debian \
+        --platform linux/amd64  \
+        --provenance false \
+        --metadata-file metadata.x64.json \
+        --output push-by-digest=true,type=image,push=true \
+        .
+
+    digest_x64=$(jq -r '.["containerimage.digest"]' metadata.x64.json)
+    echo "Built image digest: ${digest_x64}"
+
+    echo "building debian:$debianVersion-slim for .NET $dotnetVersion arm64"
+    docker buildx build \
+        --build-arg DEBIAN_VERSION=$debianVersion \
+        --build-arg DOTNET_VERSION=$dotnetVersion \
+        -f ./debian.arm64.Dockerfile \
+        -t andrewlock/dotnet-debian \
+        --platform linux/arm64  \
+        --provenance false \
+        --metadata-file metadata.arm64.json \
+        --output push-by-digest=true,type=image,push=true \
+        .
+
+    digest_arm64=$(jq -r '.["containerimage.digest"]' metadata.arm64.json)
+    echo "Built image digest: ${digest_arm64}"
+
+    echo "Creating andrewlock/dotnet-debian:$debianVersion-$dotnetVersionShort"
+    docker manifest create andrewlock/dotnet-debian:$debianVersion-$dotnetVersionShort \
+        andrewlock/dotnet-debian@${digest_x64} \
+        andrewlock/dotnet-debian@${digest_arm64}
+
+    docker manifest push andrewlock/dotnet-debian:$debianVersion-$dotnetVersionShort
+done;
+
 echo "Building Fedora images"
 for i in "40 9.0" "37 8.0" "36 8.0" "36 7.0" "35 7.0" "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1" "29 3.1" "29 2.1" ; do 
     a=( $i )

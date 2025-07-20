@@ -47,6 +47,23 @@ for i in "trixie 8.0.18 8.0" "trixie 9.0.7 9.0" ; do
     docker manifest push andrewlock/dotnet-debian:$debianVersion-$dotnetVersionShort
 done;
 
+echo "Building Ubuntu images"
+for i in "25.04 8.0" "25.04 9.0" ; do 
+    a=( $i )
+    ubuntuVersion="${a[0]}";
+    dotnetVersion="${a[1]}";
+    
+    echo "building ubuntu:$ubuntuVersion for .NET $dotnetVersion"
+    docker buildx build \
+        --build-arg UBUNTU_VERSION=$ubuntuVersion \
+        --build-arg DOTNET_VERSION=$dotnetVersion \
+        -f ./ubuntu.Dockerfile \
+        -t andrewlock/dotnet-ubuntu:$ubuntuVersion-$dotnetVersion \
+        --platform linux/arm64,linux/amd64  \
+        --push .
+
+done;
+
 echo "Building Fedora images"
 for i in "40 9.0" "37 8.0" "36 8.0" "36 7.0" "35 7.0" "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1" "29 3.1" "29 2.1" ; do 
     a=( $i )

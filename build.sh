@@ -36,7 +36,7 @@ docker_image_exists() {
 
 
 echo "Building Debian images"
-for i in "trixie 8.0.18 8.0" "trixie 9.0.7 9.0" ; do 
+for i in "trixie 10.0.100 10.0" "trixie 9.0.7 9.0" "trixie 8.0.18 8.0" ; do 
     a=( $i )
     debianVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -80,7 +80,7 @@ for i in "trixie 8.0.18 8.0" "trixie 9.0.7 9.0" ; do
     echo "Built image digest: ${digest_arm64}"
 
     echo "Creating $image:$tag"
-    docker manifest create $image:$tag \
+    docker manifest create --amend $image:$tag \
         $image@${digest_x64} \
         $image@${digest_arm64}
 
@@ -89,7 +89,7 @@ for i in "trixie 8.0.18 8.0" "trixie 9.0.7 9.0" ; do
 done;
 
 echo "Building Ubuntu images"
-for i in "25.04 8.0" "25.04 9.0" ; do 
+for i in "25.10 10.0" "25.04 9.0" "25.04 8.0" ; do 
     a=( $i )
     ubuntuVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -113,7 +113,7 @@ for i in "25.04 8.0" "25.04 9.0" ; do
 done;
 
 echo "Building Fedora images"
-for i in "40 9.0" "37 8.0" "36 8.0" "36 7.0" "35 7.0" "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1" "29 3.1" "29 2.1" ; do 
+for i in "42 10.0" "40 9.0" "37 8.0" "36 8.0" "36 7.0" "35 7.0" "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1" "29 3.1" "29 2.1" ; do 
     a=( $i )
     fedoraVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -144,7 +144,7 @@ for i in "40 9.0" "37 8.0" "36 8.0" "36 7.0" "35 7.0" "35 5.0" "35 3.1" "34 6.0"
 done;
 
 echo "Building Fedora Arm64 images"
-for i in "40 9.0" "37 8.0" "36 8.0" "35 7.0" "35 5.0" "34 6.0" "33 3.1" ; do 
+for i in "42 10.0"  "40 9.0" "37 8.0" "36 8.0" "35 7.0" "35 5.0" "34 6.0" "33 3.1" ; do 
     a=( $i )
     fedoraVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -197,8 +197,8 @@ for i in "7 2.1" "7 3.1" "7 5.0" "7 6.0" "7 7.0"; do
 
 done;
 
-echo "Building RHEL 8+9 images"
-for i in "8 9.0" "9 9.0" "8 3.1" "8 5.0" "8 6.0" "8 7.0"; do 
+echo "Building RHEL images"
+for i in "9 10.0" "10 10.0" "8 9.0" "9 9.0" "8 3.1" "8 5.0" "8 6.0" "8 7.0"; do 
     a=( $i )
     rhelVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -228,7 +228,7 @@ for i in "8 9.0" "9 9.0" "8 3.1" "8 5.0" "8 6.0" "8 7.0"; do
 done;
 
 echo "Building CentOS Stream images"
-for i in "9 9.0" "8 3.1" "8 5.0" "8 6.0" "9 6.0" "8 7.0" "9 7.0"; do 
+for i in "9 10.0" "10 10.0"  "9 9.0" "8 3.1" "8 5.0" "8 6.0" "9 6.0" "8 7.0" "9 7.0"; do 
     a=( $i )
     centosVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -258,7 +258,7 @@ for i in "9 9.0" "8 3.1" "8 5.0" "8 6.0" "9 6.0" "8 7.0" "9 7.0"; do
 done;
 
 echo "Building Open Suse images"
-for i in  "15 9.0" "15 2.1" "15 3.1" "15 5.0" "15 6.0" "15 7.0"; do 
+for i in  "16.0 10.0" "15 10.0" "15 9.0" "15 2.1" "15 3.1" "15 5.0" "15 6.0" "15 7.0"; do 
     a=( $i )
     opensuse="${a[0]}";
     dotnetVersion="${a[1]}";

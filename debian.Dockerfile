@@ -7,30 +7,30 @@ FROM amd64/buildpack-deps:${DEBIAN_VERSION}-curl AS installer
 
 # Retrieve .NET Runtime
 ARG DOTNET_VERSION
-RUN dotnet_version=${DOTNET_VERSION} \
+RUN dotnet_version=10.0.0-preview.7.25380.108 \
     && curl --fail --show-error --location \
         --remote-name https://builds.dotnet.microsoft.com/dotnet/Runtime/$dotnet_version/dotnet-runtime-$dotnet_version-linux-x64.tar.gz \
-        --remote-name https://builds.dotnet.microsoft.com/dotnet/checksums/$dotnet_version-sha.txt \
-    && sed -i 's/\r$//' $dotnet_version-sha.txt \
-    && sha512sum -c $dotnet_version-sha.txt --ignore-missing \
+        --remote-name https://builds.dotnet.microsoft.com/dotnet/checksums/10.0.0-preview.7-sha.txt \
+    && sed -i 's/\r$//' 10.0.0-preview.7-sha.txt \
+    && sha512sum -c 10.0.0-preview.7-sha.txt --ignore-missing \
     && mkdir --parents /dotnet \
     && tar --gzip --extract --no-same-owner --file dotnet-runtime-$dotnet_version-linux-x64.tar.gz --directory /dotnet \
     && rm \
         dotnet-runtime-$dotnet_version-linux-x64.tar.gz \
-        $dotnet_version-sha.txt
+        10.0.0-preview.7-sha.txt
 
 # Retrieve ASP.NET Core
-RUN aspnetcore_version=${DOTNET_VERSION} \
+RUN aspnetcore_version=10.0.0-preview.7.25380.108 \
     && curl --fail --show-error --location \
         --remote-name https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/$aspnetcore_version/aspnetcore-runtime-$aspnetcore_version-linux-x64.tar.gz \
-        --remote-name https://builds.dotnet.microsoft.com/dotnet/checksums/$aspnetcore_version-sha.txt \
-    && sed -i 's/\r$//' $aspnetcore_version-sha.txt \
-    && sha512sum -c $aspnetcore_version-sha.txt --ignore-missing \
+        --remote-name https://builds.dotnet.microsoft.com/dotnet/checksums/10.0.0-preview.7-sha.txt \
+    && sed -i 's/\r$//' 10.0.0-preview.7-sha.txt \
+    && sha512sum -c 10.0.0-preview.7-sha.txt --ignore-missing \
     && mkdir --parents /dotnet \
     && tar --gzip --extract --no-same-owner --file aspnetcore-runtime-$aspnetcore_version-linux-x64.tar.gz --directory /dotnet ./shared/Microsoft.AspNetCore.App \
     && rm \
         aspnetcore-runtime-$aspnetcore_version-linux-x64.tar.gz \
-        $aspnetcore_version-sha.txt
+        10.0.0-preview.7-sha.txt
 
 FROM debian:${DEBIAN_VERSION}-slim
 
@@ -72,8 +72,8 @@ ENV \
 
 # ASP.NET Core version
 ARG DOTNET_VERSION
-ENV ASPNET_VERSION=${DOTNET_VERSION}
-ENV DOTNET_VERSION=${DOTNET_VERSION}
+ENV ASPNET_VERSION=10.0.0-preview.7.25380.108
+ENV DOTNET_VERSION=10.0.0-preview.7.25380.108
 
 COPY --from=installer ["/dotnet", "/usr/share/dotnet"]
 

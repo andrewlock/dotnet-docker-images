@@ -49,7 +49,7 @@ for i in "trixie 10.0.100 10.0" "trixie 9.0.7 9.0" "trixie 8.0.18 8.0" ; do
         continue
     fi
     
-    echo "building debian:$debianVersion-slim for .NET $dotnetVersion x64"
+    echo "building $image for .NET $dotnetVersion x64"
     docker buildx build \
         --build-arg DEBIAN_VERSION=$debianVersion \
         --build-arg DOTNET_VERSION=$dotnetVersion \
@@ -64,7 +64,7 @@ for i in "trixie 10.0.100 10.0" "trixie 9.0.7 9.0" "trixie 8.0.18 8.0" ; do
     digest_x64=$(jq -r '.["containerimage.digest"]' metadata.x64.json)
     echo "Built image digest: ${digest_x64}"
 
-    echo "building debian:$debianVersion-slim for .NET $dotnetVersion arm64"
+    echo "building $image for .NET $dotnetVersion arm64"
     docker buildx build \
         --build-arg DEBIAN_VERSION=$debianVersion \
         --build-arg DOTNET_VERSION=$dotnetVersion \

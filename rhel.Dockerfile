@@ -1,4 +1,5 @@
-FROM redhat/ubi8
+ARG RHEL_VERSION
+FROM redhat/ubi${RHEL_VERSION}
 
 ENV \
     # Do not show first run text
@@ -11,5 +12,6 @@ ENV \
     DOTNET_URLS=http://+:5000
 
 ARG DOTNET_VERSION
-RUN dnf install -y aspnetcore-runtime-$DOTNET_VERSION \
+RUN dnf update -y --refresh \
+    && dnf install -y aspnetcore-runtime-$DOTNET_VERSION \
     && dotnet --info

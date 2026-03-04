@@ -20,7 +20,7 @@ RUN if [ "$DOTNET_VERSION" == "2.1" ] || [ "$DOTNET_VERSION" == "3.1" ]; \
       else zypper install -y libicu; fi\
     && zypper install -y wget \
     && (rpm --import https://packages.microsoft.com/keys/microsoft.asc || echo 'Skipping key import') \
-    && wget https://packages.microsoft.com/config/opensuse/$OPENSUSE_VERSION/prod.repo \
+    && wget https://packages.microsoft.com/config/opensuse/${OPENSUSE_VERSION%.0}/prod.repo \
     && mv prod.repo /etc/zypp/repos.d/microsoft-prod.repo \
     && chown root:root /etc/zypp/repos.d/microsoft-prod.repo \
     && zypper --gpg-auto-import-keys ref \

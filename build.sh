@@ -34,9 +34,55 @@ docker_image_exists() {
   done
 }
 
+echo "Building Amazon Linux 2023 images"
+for i in "2023 8.0"; do 
+    a=( $i )
+    distroVersion="${a[0]}";
+    dotnetVersion="${a[1]}";
+
+    image="andrewlock/dotnet-amazonlinux"
+    tag=$distroVersion-$dotnetVersion
+    if docker_image_exists $image $tag; then
+        echo "${image}:${tag} exists, skipping"
+        continue
+    fi
+    
+    echo "building $image:$tag"
+    docker buildx build \
+        --build-arg DISTRO_VERSION=$distroVersion \
+        --build-arg DOTNET_VERSION=$dotnetVersion \
+        -f ./amazonlinux.Dockerfile \
+        -t $image:$tag \
+        --platform linux/arm64,linux/amd64  \
+        --push .
+done;
+
+echo "Building Amazon Linux 2 images"
+for i in "2 6.0" ; do 
+    a=( $i )
+    distroVersion="${a[0]}";
+    dotnetVersion="${a[1]}";
+
+    image="andrewlock/dotnet-amazonlinux"
+    tag=$distroVersion-$dotnetVersion
+    if docker_image_exists $image $tag; then
+        echo "${image}:${tag} exists, skipping"
+        continue
+    fi
+    
+    echo "building $image:$tag"
+    docker buildx build \
+        --build-arg DISTRO_VERSION=$distroVersion \
+        --build-arg DOTNET_VERSION=$dotnetVersion \
+        -f ./amazonlinux.2.Dockerfile \
+        -t $image:$tag \
+        --platform linux/arm64,linux/amd64  \
+        --push .
+done;
+
 
 echo "Building Debian images"
-for i in "trixie 10.0.100 10.0" "trixie 9.0.7 9.0" "trixie 8.0.18 8.0" ; do 
+for i in "trixie 10.0.100 10.0" ; do 
     a=( $i )
     debianVersion="${a[0]}";
     dotnetVersion="${a[1]}";
@@ -80,7 +126,7 @@ for i in "trixie 10.0.100 10.0" "trixie 9.0.7 9.0" "trixie 8.0.18 8.0" ; do
     echo "Built image digest: ${digest_arm64}"
 
     echo "Creating $image:$tag"
-    docker manifest create --amend $image:$tag \
+    docker manifest create $image:$tag \
         $image@${digest_x64} \
         $image@${digest_arm64}
 
@@ -113,7 +159,7 @@ for i in "25.10 10.0" "25.04 9.0" "25.04 8.0" ; do
 done;
 
 echo "Building Fedora images"
-for i in "42 10.0" "40 9.0" "37 8.0" "36 8.0" "36 7.0" "35 7.0" "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1" "29 3.1" "29 2.1" ; do 
+for i in "42 10.0" "40 9.0" "37 8.0" "36 7.0" "35 7.0" "35 5.0" "35 3.1" "34 6.0" "34 5.0" "34 3.1" "33 5.0" "33 3.1" "29 3.1" "29 2.1" ; do 
     a=( $i )
     fedoraVersion="${a[0]}";
     dotnetVersion="${a[1]}";

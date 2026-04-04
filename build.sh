@@ -34,6 +34,22 @@ docker_image_exists() {
   done
 }
 
+echo "Building Docker sandbox images"
+for i in "claude-code claude claude-code-docker claude-docker" "claude-code-minimal claude-minimal"; do 
+    a=( $i )
+    baseTag="${a[0]}";
+    tag="${a[1]}";
+    image="andrewlock/sandbox"
+    
+    echo "building $image:$tag"
+    docker buildx build \
+        --build-arg BASE_TAG=$baseTag \
+        -f ./sandbox.Dockerfile \
+        -t $image:$tag \
+        --platform linux/arm64,linux/amd64  \
+        --push .
+done;
+
 echo "Building Amazon Linux 2023 images"
 for i in "2023 8.0"; do 
     a=( $i )

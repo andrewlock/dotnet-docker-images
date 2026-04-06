@@ -35,7 +35,7 @@ docker_image_exists() {
 }
 
 echo "Building Docker sandbox images"
-for i in "claude-code claude claude-code-docker claude-docker" "claude-code-minimal claude-minimal"; do 
+for i in "claude-code claude" "claude-code-docker claude-docker" "claude-code-minimal claude-minimal"; do 
     a=( $i )
     baseTag="${a[0]}";
     tag="${a[1]}";

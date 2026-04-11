@@ -16,8 +16,6 @@ RUN apt-get update \
     zlib1g
 
 ENV \
-    # Do not generate certificate
-    DOTNET_GENERATE_ASPNET_CERTIFICATE=false \
     # Do not show first run text
     DOTNET_NOLOGO=1 \
     # Disable telemetry to reduce overhead
@@ -38,19 +36,19 @@ RUN if [ "$(uname -m)" = "x86_64" ]; \
     fi \
     && curl -sSL https://dot.net/v1/dotnet-install.sh --output dotnet-install.sh  \
     && chmod +x ./dotnet-install.sh \
-    && ./dotnet-install.sh --channel 10.0 --install-dir /home/agent/dotnet \
-    && ./dotnet-install.sh --runtime $NETCORERUNTIME2_1 --channel 2.1 --install-dir /home/agent/dotnet --no-path \
-    && ./dotnet-install.sh --runtime aspnetcore --channel 3.0 --install-dir /home/agent/dotnet --no-path \
-    && ./dotnet-install.sh --runtime aspnetcore --channel 3.1 --install-dir /home/agent/dotnet --no-path \
-    && ./dotnet-install.sh --runtime aspnetcore --channel 5.0 --install-dir /home/agent/dotnet --no-path \
-    && ./dotnet-install.sh --runtime aspnetcore --channel 6.0 --install-dir /home/agent/dotnet --no-path \
-    && ./dotnet-install.sh --runtime aspnetcore --channel 7.0 --install-dir /home/agent/dotnet --no-path \
-    && ./dotnet-install.sh --runtime aspnetcore --channel 8.0 --install-dir /home/agent/dotnet --no-path \
-    && ./dotnet-install.sh --runtime aspnetcore --channel 9.0 --install-dir /home/agent/dotnet --no-path \
+    && ./dotnet-install.sh --channel 10.0 --install-dir /home/agent/.dotnet \
+    && ./dotnet-install.sh --runtime $NETCORERUNTIME2_1 --channel 2.1 --install-dir /home/agent/.dotnet --no-path \
+    && ./dotnet-install.sh --runtime aspnetcore --channel 3.0 --install-dir /home/agent/.dotnet --no-path \
+    && ./dotnet-install.sh --runtime aspnetcore --channel 3.1 --install-dir /home/agent/.dotnet --no-path \
+    && ./dotnet-install.sh --runtime aspnetcore --channel 5.0 --install-dir /home/agent/.dotnet --no-path \
+    && ./dotnet-install.sh --runtime aspnetcore --channel 6.0 --install-dir /home/agent/.dotnet --no-path \
+    && ./dotnet-install.sh --runtime aspnetcore --channel 7.0 --install-dir /home/agent/.dotnet --no-path \
+    && ./dotnet-install.sh --runtime aspnetcore --channel 8.0 --install-dir /home/agent/.dotnet --no-path \
+    && ./dotnet-install.sh --runtime aspnetcore --channel 9.0 --install-dir /home/agent/.dotnet --no-path \
     && rm ./dotnet-install.sh \
-    && sudo ln -s /home/agent/dotnet/dotnet /usr/bin/dotnet \
+    && sudo ln -s /home/agent/.dotnet/dotnet /usr/bin/dotnet \
 # Trigger first run experience by running arbitrary cmd
     && dotnet help
 
-ENV DOTNET_ROOT=/usr/share/dotnet \
-    Path=$PATH:/usr/share/dotnet:/usr/share/dotnet/tools
+ENV DOTNET_ROOT=/home/agent/.dotnet \
+    PATH=$PATH:/home/agent/.dotnet:/home/agent/.dotnet/tools

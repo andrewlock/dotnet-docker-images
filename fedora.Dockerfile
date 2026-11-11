@@ -7,13 +7,14 @@ ENV \
     # Enable correct mode for dotnet watch (only mode supported in a container)
     DOTNET_USE_POLLING_FILE_WATCHER=true \
     # Skip extraction of XML docs - generally not useful within an image/container - helps performance
-    NUGET_XMLDOC_MODE=skip
+    NUGET_XMLDOC_MODE=skip \
+    # This is the default install location for dotnetup
+    DOTNET_PATH="/root/.local/share/dotnetup/dotnet"
+ENV PATH="${DOTNET_PATH}:${PATH}"
 
-ARG FEDORA_VERSION
+
 ARG DOTNET_VERSION
-RUN yum install wget -y \
-    && (rpm --import https://packages.microsoft.com/keys/microsoft.asc || echo 'Skipping key import')  \
-    && (wget -O /etc/yum.repos.d/microsoft-prod.repo https://packages.microsoft.com/config/fedora/$FEDORA_VERSION/prod.repo || echo 'Skipping add repo') \
-    && dnf install -y aspnetcore-runtime-$DOTNET_VERSION \
-    && dotnet --info \
-    && yum remove -y wget
+RUN dnf install -y glibc libgcc ca-certificates openssl-libs libstdc++ libicu tzdata krb5-libs zlib \
+  && (curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | sh) \
+  && /root/.dotnetup/dotnetup runtime install aspnetcore@$DOTNET_VERSION --set-default-install --no-progress --interactive false \
+  && dotnet --info

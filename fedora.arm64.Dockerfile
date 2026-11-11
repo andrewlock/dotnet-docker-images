@@ -8,15 +8,13 @@ ENV \
     DOTNET_USE_POLLING_FILE_WATCHER=true \
     # Skip extraction of XML docs - generally not useful within an image/container - helps performance
     NUGET_XMLDOC_MODE=skip \
-    # Specify install location
-    DOTNET_ROOT=/var/opt/dotnet
+    # This is the default install location for dotnetup
+    DOTNET_PATH="/root/.local/share/dotnetup/dotnet"
+
+ENV PATH="${DOTNET_PATH}:${PATH}"
 
 ARG DOTNET_VERSION
-RUN dnf install -y findutils libicu \
-    && mkdir -p $DOTNET_ROOT \
-    && curl -sL -o dotnet-install.sh https://dot.net/v1/dotnet-install.sh  \
-    && chmod +x ./dotnet-install.sh \
-    && ./dotnet-install.sh --channel $DOTNET_VERSION --runtime aspnetcore --install-dir $DOTNET_ROOT \
-    && rm ./dotnet-install.sh
-
-ENV PATH=$DOTNET_ROOT:$PATH
+RUN dnf install -y glibc libgcc ca-certificates openssl-libs libstdc++ libicu tzdata krb5-libs zlib \
+  && (curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | sh) \
+  && /root/.dotnetup/dotnetup runtime install aspnetcore@$DOTNET_VERSION --set-default-install --no-progress --interactive false \
+  && dotnet --info

@@ -9,22 +9,19 @@ ENV \
     # Skip extraction of XML docs - generally not useful within an image/container - helps performance
     NUGET_XMLDOC_MODE=skip \
     # listen on port 5000 by default
-    DOTNET_URLS=http://+:5000
+    DOTNET_URLS=http://+:5000 \
+    # This is the default install location for dotnetup
+    DOTNET_PATH="/root/.local/share/dotnetup/dotnet"
 
-ARG OPENSUSE_VERSION
+ENV PATH="${DOTNET_PATH}:${PATH}"
+
 ARG DOTNET_VERSION
 # add the Microsoft package signing key to your list of trusted keys and add the Microsoft package repository
 # Earlier versions of .NET need to use an earlier version of zypper
 RUN if [ "$DOTNET_VERSION" == "2.1" ] || [ "$DOTNET_VERSION" == "3.1" ]; \
       then zypper install -y libicu69-69.1-7.3.2; \
       else zypper install -y libicu; fi\
-    && zypper install -y wget \
-    && (rpm --import https://packages.microsoft.com/keys/microsoft.asc || echo 'Skipping key import') \
-    && wget https://packages.microsoft.com/config/opensuse/${OPENSUSE_VERSION%.0}/prod.repo \
-    && mv prod.repo /etc/zypp/repos.d/microsoft-prod.repo \
-    && chown root:root /etc/zypp/repos.d/microsoft-prod.repo \
-    && zypper --gpg-auto-import-keys ref \
-    && zypper rm -y wget
-
-RUN zypper install -y aspnetcore-runtime-$DOTNET_VERSION \
+    && zypper install -y ca-certificates glibc krb5 libgcc_s1 libicu libopenssl3 libstdc++6 timezone zlib  \
+    && (curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | sh) \
+    && /root/.dotnetup/dotnetup runtime install aspnetcore@$DOTNET_VERSION --set-default-install --no-progress --interactive false \
     && dotnet --info

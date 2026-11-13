@@ -67,7 +67,7 @@ for i in "2023 8.0"; do
     docker buildx build \
         --build-arg DISTRO_VERSION=$distroVersion \
         --build-arg DOTNET_VERSION=$dotnetVersion \
-        -f ./amazonlinux.Dockerfile \
+        -f ./amazonlinux.2023.Dockerfile \
         -t $image:$tag \
         --platform linux/arm64,linux/amd64  \
         --push .
@@ -98,14 +98,13 @@ done;
 
 
 echo "Building Debian images"
-for i in "trixie 11.0.100 11.0" "trixie 10.0.100 10.0" ; do 
+for i in "trixie 11.0" "trixie 10.0" ; do 
     a=( $i )
     debianVersion="${a[0]}";
     dotnetVersion="${a[1]}";
-    dotnetVersionShort="${a[2]}";
 
     image="andrewlock/dotnet-debian"
-    tag=$debianVersion-$dotnetVersionShort
+    tag=$debianVersion-$dotnetVersion
     if docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue

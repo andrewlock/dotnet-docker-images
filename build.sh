@@ -1,6 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+usage() {
+  echo "Usage: $0 [--push] [--force]"
+  echo "  --push   Push images built with 'docker build' (buildx builds always push)"
+  echo "  --force  Rebuild images even if the tag already exists in the registry"
+}
+
+PUSH=false
+FORCE=false
+for arg in "$@"; do
+  case "$arg" in
+    --push) PUSH=true ;;
+    --force) FORCE=true ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown argument: $arg" >&2; usage >&2; exit 1 ;;
+  esac
+done
+
 docker_image_exists() {
   local repo="$1"
   local tag="$2"
@@ -58,7 +75,7 @@ for i in "2023 8.0"; do
 
     image="andrewlock/dotnet-amazonlinux"
     tag=$distroVersion-$dotnetVersion
-    if docker_image_exists $image $tag; then
+    if [[ "$FORCE" != true ]] && docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue
     fi
@@ -81,7 +98,7 @@ for i in "2 6.0" ; do
 
     image="andrewlock/dotnet-amazonlinux"
     tag=$distroVersion-$dotnetVersion
-    if docker_image_exists $image $tag; then
+    if [[ "$FORCE" != true ]] && docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue
     fi
@@ -105,7 +122,7 @@ for i in "trixie 11.0" "trixie 10.0" ; do
 
     image="andrewlock/dotnet-debian"
     tag=$debianVersion-$dotnetVersion
-    if docker_image_exists $image $tag; then
+    if [[ "$FORCE" != true ]] && docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue
     fi
@@ -157,7 +174,7 @@ for i in "26.10 11.0" "25.10 10.0" "25.04 9.0" "25.04 8.0" ; do
 
     image="andrewlock/dotnet-ubuntu"
     tag=$ubuntuVersion-$dotnetVersion
-    if docker_image_exists $image $tag; then
+    if [[ "$FORCE" != true ]] && docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue
     fi
@@ -181,7 +198,7 @@ for i in "45 11.0" "42 10.0" "40 9.0" "37 8.0" "36 7.0" "35 7.0" "35 5.0" "35 3.
 
     image="andrewlock/dotnet-fedora"
     tag=$fedoraVersion-$dotnetVersion
-    if docker_image_exists $image $tag; then
+    if [[ "$FORCE" != true ]] && docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue
     fi
@@ -195,7 +212,7 @@ for i in "45 11.0" "42 10.0" "40 9.0" "37 8.0" "36 7.0" "35 7.0" "35 5.0" "35 3.
         -t $image:$tag \
         .
 
-    if [[ "${1-''}" == "push" ]]
+    if [[ "$PUSH" == true ]]
     then
         docker push $image:$tag
     else
@@ -212,7 +229,7 @@ for i in "45 11.0" "42 10.0"  "40 9.0" "37 8.0" "36 8.0" "35 7.0" "35 5.0" "34 6
 
     image="andrewlock/dotnet-fedora-arm64"
     tag=$fedoraVersion-$dotnetVersion
-    if docker_image_exists $image $tag; then
+    if [[ "$FORCE" != true ]] && docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue
     fi
@@ -236,7 +253,7 @@ for i in "7 2.1" "7 3.1" "7 5.0" "7 6.0" "7 7.0"; do
 
     image="andrewlock/dotnet-centos"
     tag=$centosVersion-$dotnetVersion
-    if docker_image_exists $image $tag; then
+    if [[ "$FORCE" != true ]] && docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue
     fi
@@ -249,7 +266,7 @@ for i in "7 2.1" "7 3.1" "7 5.0" "7 6.0" "7 7.0"; do
         -t $image:$tag \
         .
 
-    if [[ "${1-''}" == "push" ]]
+    if [[ "$PUSH" == true ]]
     then
         docker push $image:$tag
     else
@@ -266,7 +283,7 @@ for i in "10 11.0" "9 10.0" "10 10.0" "8 9.0" "9 9.0" "8 3.1" "8 5.0" "8 6.0" "8
 
     image="andrewlock/dotnet-rhel"
     tag=$rhelVersion-$dotnetVersion
-    if docker_image_exists $image $tag; then
+    if [[ "$FORCE" != true ]] && docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue
     fi
@@ -279,7 +296,7 @@ for i in "10 11.0" "9 10.0" "10 10.0" "8 9.0" "9 9.0" "8 3.1" "8 5.0" "8 6.0" "8
         -t $image:$tag \
         .
 
-    if [[ "${1-''}" == "push" ]]
+    if [[ "$PUSH" == true ]]
     then
         docker push $image:$tag
     else
@@ -296,7 +313,7 @@ for i in "10 11.0" "9 10.0" "10 10.0"  "9 9.0" "8 3.1" "8 5.0" "8 6.0" "9 6.0" "
 
     image="andrewlock/dotnet-centos-stream"
     tag=$centosVersion-$dotnetVersion
-    if docker_image_exists $image $tag; then
+    if [[ "$FORCE" != true ]] && docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue
     fi
@@ -309,7 +326,7 @@ for i in "10 11.0" "9 10.0" "10 10.0"  "9 9.0" "8 3.1" "8 5.0" "8 6.0" "9 6.0" "
         -t $image:$tag \
         .
 
-    if [[ "${1-''}" == "push" ]]
+    if [[ "$PUSH" == true ]]
     then
         docker push $image:$tag
     else
@@ -326,7 +343,7 @@ for i in "16.1 11.0" "16.0 10.0" "15 10.0" "15 9.0" "15 2.1" "15 3.1" "15 5.0" "
 
     image="andrewlock/dotnet-opensuse"
     tag=$opensuse-$dotnetVersion
-    if docker_image_exists $image $tag; then
+    if [[ "$FORCE" != true ]] && docker_image_exists $image $tag; then
         echo "${image}:${tag} exists, skipping"
         continue
     fi
@@ -339,7 +356,7 @@ for i in "16.1 11.0" "16.0 10.0" "15 10.0" "15 9.0" "15 2.1" "15 3.1" "15 5.0" "
         -t $image:$tag \
         .
 
-    if [[ "${1-''}" == "push" ]]
+    if [[ "$PUSH" == true ]]
     then
         docker push $image:$tag
     else

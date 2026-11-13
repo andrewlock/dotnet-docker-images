@@ -1,4 +1,12 @@
 ARG OPENSUSE_VERSION
+
+# Build the smoke test against the .NET version being installed (always using the latest SDK)
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:11.0 AS smoke-test
+ARG DOTNET_VERSION
+WORKDIR /src
+COPY smoke-test/ .
+RUN dotnet publish -c Release -o /out -nologo -p:SmokeTestTfm=netcoreapp$(echo "$DOTNET_VERSION" | cut -d. -f1,2)
+
 FROM opensuse/leap:$OPENSUSE_VERSION
 
 ENV \
@@ -10,18 +18,30 @@ ENV \
     NUGET_XMLDOC_MODE=skip \
     # listen on port 5000 by default
     DOTNET_URLS=http://+:5000 \
-    # This is the default install location for dotnetup
-    DOTNET_PATH="/root/.local/share/dotnetup/dotnet"
-
-ENV PATH="${DOTNET_PATH}:${PATH}"
+    # Disable telemetry (also covers dotnetup itself)
+    DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+    # Fixed install location, readable by all users. Also lets apphost executables find the runtime.
+    DOTNET_ROOT=/opt/dotnet
 
 ARG DOTNET_VERSION
-# add the Microsoft package signing key to your list of trusted keys and add the Microsoft package repository
-# Earlier versions of .NET need to use an earlier version of zypper
-RUN if [ "$DOTNET_VERSION" == "2.1" ] || [ "$DOTNET_VERSION" == "3.1" ]; \
-      then zypper install -y libicu69-69.1-7.3.2; \
-      else zypper install -y libicu; fi\
-    && zypper install -y ca-certificates glibc krb5 libgcc_s1 libicu libopenssl3 libstdc++6 timezone zlib  \
-    && (curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | sh) \
-    && /root/.dotnetup/dotnetup runtime install aspnetcore@$DOTNET_VERSION --set-default-install --no-progress --interactive false \
+# Older runtimes don't support newer ICU/OpenSSL versions:
+#  - .NET Core 2.1/3.1 don't recognise ICU 73+ and don't support OpenSSL 3
+#  - .NET 5 doesn't support OpenSSL 3
+# libopenssl1_1 is only available on Leap 15
+RUN case "$DOTNET_VERSION" in \
+      2.1|3.1) native_deps="libicu69 libopenssl1_1" ;; \
+      5.0)     native_deps="libicu libopenssl1_1" ;; \
+      *)       native_deps="libicu libopenssl3" ;; \
+    esac \
+    && zypper install -y ca-certificates glibc krb5 libgcc_s1 libstdc++6 timezone zlib $native_deps \
+    && zypper clean --all \
+    && curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash -s -- --install-dir /tmp/dotnetup \
+    && /tmp/dotnetup/dotnetup runtime install aspnetcore@$DOTNET_VERSION \
+        --install-path $DOTNET_ROOT --untracked --no-progress --interactive false \
+    && rm -rf /tmp/dotnetup /root/.local/share/dotnetup /root/.dotnetup \
+    && ln -s $DOTNET_ROOT/dotnet /usr/bin/dotnet \
     && dotnet --info
+
+# Check the native dependencies (ICU, OpenSSL, zlib) actually load. The smoke test isn't left in the image.
+RUN --mount=type=bind,from=smoke-test,source=/out,target=/smoke-test \
+    dotnet /smoke-test/SmokeTest.dll

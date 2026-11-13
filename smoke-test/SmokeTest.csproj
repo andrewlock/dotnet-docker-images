@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Overridden in the Dockerfiles (-p:SmokeTestTfm=...) to match the .NET version being built -->
+    <SmokeTestTfm Condition="'$(SmokeTestTfm)' == ''">net11.0</SmokeTestTfm>
+    <TargetFramework>$(SmokeTestTfm)</TargetFramework>
+    <UseAppHost>false</UseAppHost>
+    <LangVersion>latest</LangVersion>
+    <!-- Targeting EOL frameworks is the point of this app, so silence the associated warnings -->
+    <NoWarn>$(NoWarn);NETSDK1138</NoWarn>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+</Project>

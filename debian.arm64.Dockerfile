@@ -1,36 +1,11 @@
-# Based on https://github.com/dotnet/dotnet-docker/blob/22c8e77e62db8d53aca5a95c67769b249cc2a835/src/runtime-deps/10.0/trixie-slim/amd64/Dockerfile
 ARG DEBIAN_VERSION
-ARG TARGETARCH
 
-# Installer image
-FROM arm64v8/buildpack-deps:${DEBIAN_VERSION}-curl AS installer
-
-# Retrieve .NET Runtime
+# Build the smoke test against the .NET version being installed (always using the latest SDK)
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:11.0 AS smoke-test
 ARG DOTNET_VERSION
-RUN dotnet_version=10.0.0-preview.7.25380.108 \
-    && curl --fail --show-error --location \
-        --remote-name https://builds.dotnet.microsoft.com/dotnet/Runtime/$dotnet_version/dotnet-runtime-$dotnet_version-linux-arm64.tar.gz \
-        --remote-name https://builds.dotnet.microsoft.com/dotnet/checksums/10.0.0-preview.7-sha.txt \
-    && sed -i 's/\r$//' 10.0.0-preview.7-sha.txt \
-    && sha512sum -c 10.0.0-preview.7-sha.txt --ignore-missing \
-    && mkdir --parents /dotnet \
-    && tar --gzip --extract --no-same-owner --file dotnet-runtime-$dotnet_version-linux-arm64.tar.gz --directory /dotnet \
-    && rm \
-        dotnet-runtime-$dotnet_version-linux-arm64.tar.gz \
-        10.0.0-preview.7-sha.txt
-
-# Retrieve ASP.NET Core
-RUN aspnetcore_version=10.0.0-preview.7.25380.108 \
-    && curl --fail --show-error --location \
-        --remote-name https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/$aspnetcore_version/aspnetcore-runtime-$aspnetcore_version-linux-arm64.tar.gz \
-        --remote-name https://builds.dotnet.microsoft.com/dotnet/checksums/10.0.0-preview.7-sha.txt \
-    && sed -i 's/\r$//' 10.0.0-preview.7-sha.txt \
-    && sha512sum -c 10.0.0-preview.7-sha.txt --ignore-missing \
-    && mkdir --parents /dotnet \
-    && tar --gzip --extract --no-same-owner --file aspnetcore-runtime-$aspnetcore_version-linux-arm64.tar.gz --directory /dotnet ./shared/Microsoft.AspNetCore.App \
-    && rm \
-        aspnetcore-runtime-$aspnetcore_version-linux-arm64.tar.gz \
-        10.0.0-preview.7-sha.txt
+WORKDIR /src
+COPY smoke-test/ .
+RUN dotnet publish -c Release -o /out -nologo -p:SmokeTestTfm=netcoreapp$(echo "$DOTNET_VERSION" | cut -d. -f1,2)
 
 FROM debian:${DEBIAN_VERSION}-slim
 
@@ -40,20 +15,17 @@ ENV \
     # Configure web servers to bind to port 8080 when present
     ASPNETCORE_HTTP_PORTS=8080 \
     # Enable detection of running in a container
-    DOTNET_RUNNING_IN_CONTAINER=true
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        \
-        # .NET dependencies
-        libc6 \
-        libgcc-s1 \
-        libicu76 \
-        libssl3t64 \
-        libstdc++6 \
-        tzdata \
-    && rm -rf /var/lib/apt/lists/*
+    DOTNET_RUNNING_IN_CONTAINER=true \
+    # Do not show first run text
+    DOTNET_NOLOGO=true \
+    # Enable correct mode for dotnet watch (only mode supported in a container)
+    DOTNET_USE_POLLING_FILE_WATCHER=true \
+    # Skip extraction of XML docs - generally not useful within an image/container - helps performance
+    NUGET_XMLDOC_MODE=skip \
+    # Disable telemetry (also covers dotnetup itself)
+    DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+    # Fixed install location, readable by all users. Also lets apphost executables find the runtime.
+    DOTNET_ROOT=/opt/dotnet
 
 # Create a non-root user and group
 RUN groupadd \
@@ -65,16 +37,20 @@ RUN groupadd \
         --create-home \
         app
 
-ENV \
-    DOTNET_NOLOGO=true \
-    DOTNET_USE_POLLING_FILE_WATCHER=true \
-    NUGET_XMLDOC_MODE=skip
-
-# ASP.NET Core version
 ARG DOTNET_VERSION
-ENV ASPNET_VERSION=10.0.0-preview.7.25380.108
-ENV DOTNET_VERSION=10.0.0-preview.7.25380.108
+# The ICU package name includes its version (e.g. libicu76), so pick the newest available
+RUN apt-get update \
+    && libicu=$(apt-cache pkgnames libicu | grep -E '^libicu[0-9]+$' | sort -V | tail -1) \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates curl libc6 libgcc-s1 libgssapi-krb5-2 $libicu libssl3t64 libstdc++6 tzdata zlib1g \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash -s -- --install-dir /tmp/dotnetup \
+    && /tmp/dotnetup/dotnetup runtime install aspnetcore@$DOTNET_VERSION \
+        --install-path $DOTNET_ROOT --untracked --no-progress --interactive false \
+    && rm -rf /tmp/dotnetup /root/.local/share/dotnetup /root/.dotnetup \
+    && ln -s $DOTNET_ROOT/dotnet /usr/bin/dotnet \
+    && dotnet --info
 
-COPY --from=installer ["/dotnet", "/usr/share/dotnet"]
-
-RUN ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+# Check the native dependencies (ICU, OpenSSL, zlib) actually load. The smoke test isn't left in the image.
+RUN --mount=type=bind,from=smoke-test,source=/out,target=/smoke-test \
+    dotnet /smoke-test/SmokeTest.dll

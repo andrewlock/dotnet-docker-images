@@ -1,3 +1,10 @@
+# Build the smoke test against the .NET version being installed (always using the latest SDK)
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:11.0 AS smoke-test
+ARG DOTNET_VERSION
+WORKDIR /src
+COPY smoke-test/ .
+RUN dotnet publish -c Release -o /out -nologo -p:SmokeTestTfm=netcoreapp$(echo "$DOTNET_VERSION" | cut -d. -f1,2)
+
 FROM centos:7
 
 ENV \
@@ -18,3 +25,7 @@ RUN rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-p
     && sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo \
     && yum install -y aspnetcore-runtime-$DOTNET_VERSION \
     && dotnet --info
+
+# Check the native dependencies (ICU, OpenSSL, zlib) actually load. The smoke test isn't left in the image.
+RUN --mount=type=bind,from=smoke-test,source=/out,target=/smoke-test \
+    dotnet /smoke-test/SmokeTest.dll
